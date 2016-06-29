@@ -16,21 +16,24 @@ class ViewController: UIViewController {
 
     let sv = view as! ExpandTopScrollView
     sv.rows = (0..<12).map { i in
-      let v = UIView()
+      let v = DemoRow()
       let gray = CGFloat(i) / 12.0
       v.backgroundColor = UIColor.init(white: gray, alpha: 1.0)
+      v.label.text = "Row \(i)"
+      v.label.sizeToFit()
       return v
     }
+
+    sv.showsVerticalScrollIndicator = false
   }
 }
-
 
 class ExpandTopScrollView: UIScrollView {
 
   var rows = [UIView]() { didSet { configure() } }
   @IBInspectable var minHeight: CGFloat = 100.0 { didSet { configure() } }
   @IBInspectable var maxHeight: CGFloat = 200.0 { didSet { configure() } }
-  @IBInspectable var enableBottomInset: Bool = true
+  @IBInspectable var enableBottomInset: Bool = false
 
   private func configure() {
     self.subviews.forEach { $0.removeFromSuperview() }
@@ -57,4 +60,28 @@ class ExpandTopScrollView: UIScrollView {
 
   }
 
+}
+
+
+class DemoRow: UIView {
+
+  lazy var label: UILabel = { [unowned self] in
+    let v = UILabel()
+    v.textColor = UIColor.magentaColor()
+    self.addSubview(v)
+    return v
+  }()
+
+  override func layoutSubviews() {
+    super.layoutSubviews()
+
+    label.center = self.bounds.center
+    print(label.frame)
+  }
+}
+
+extension CGRect {
+  var center: CGPoint {
+    return CGPointMake(midX, midY)
+  }
 }
