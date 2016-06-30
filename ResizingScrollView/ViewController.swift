@@ -28,11 +28,16 @@ class ViewController: UIViewController {
   }
 }
 
+class ExpandableView: UIView {
+  var expandedRatio: CGFloat = 1.0 { didSet { setNeedsDisplay() } }
+}
+
 class ExpandTopScrollView: UIScrollView {
 
-  var rows = [UIView]() { didSet { configure() } }
+  var rows = [ExpandableView]() { didSet { configure() } }
   @IBInspectable var minHeightOverWidth: CGFloat = 0.2 { didSet { configure() } }
   @IBInspectable var maxHeightOverWidth: CGFloat = 0.8 { didSet { configure() } }
+  @IBInspectable var expandAboveRows: Bool = true
   @IBInspectable var enableBottomInset: Bool = true
 
   var minHeight: CGFloat {
@@ -60,8 +65,9 @@ class ExpandTopScrollView: UIScrollView {
   override func layoutSubviews() {
     super.layoutSubviews()
 
+
     NSLog("layoutSubview()")
-    expandAllAboveCurrent()
+    expandAboveRows ? expandAllAboveCurrent() : expandCurrentOnly()
   }
 
   private func expandCurrentOnly() {
@@ -82,8 +88,6 @@ class ExpandTopScrollView: UIScrollView {
     let curIndex = Int(offset / maxHeight)
 
     let invisibleHeight = offset - CGFloat(curIndex) * maxHeight
-//    let visibleHeight = maxHeight - invisibleHeight
-
     let invisibleRatio = invisibleHeight / maxHeight
     let nextHeight = minHeight + invisibleRatio * (maxHeight - minHeight)
 
@@ -107,7 +111,10 @@ class ExpandTopScrollView: UIScrollView {
         height = minHeight
       }
 
-      rows[i].frame = CGRectMake(0, y, width, height)
+      let row = rows[i]
+      row.frame = CGRectMake(0, y, width, height)
+      row.expandedRatio = height / maxHeight
+
       y += height
     }
 
@@ -133,7 +140,7 @@ extension ExpandTopScrollView: UIScrollViewDelegate {
 }
 
 
-class DemoRow: UIView {
+class DemoRow: ExpandableView {
 
   lazy var label: UILabel = { [unowned self] in
     let v = UILabel()
@@ -145,7 +152,7 @@ class DemoRow: UIView {
   override func layoutSubviews() {
     super.layoutSubviews()
 
-    label.center = self.bounds.center
+    label.center = CGPointMake(bounds.midX, bounds.midY + height * (1.0 - expandedRatio))
   }
 }
 
