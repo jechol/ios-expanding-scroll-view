@@ -43,30 +43,93 @@ class ExpandTopScrollView: UIScrollView {
   }
 
   private func configure() {
-    self.subviews.forEach { $0.removeFromSuperview() }
+    delegate = self
+    subviews.forEach { $0.removeFromSuperview() }
 
-    var y = 0 as CGFloat
+//    var y = 0 as CGFloat
 
     rows.enumerate().forEach { (index, view) in
-      let rowHeight = index == 0 ? self.maxHeight : self.minHeight
-      view.frame = CGRectMake(0, y, self.frame.width, rowHeight)
+//      let rowHeight = index == 0 ? self.maxHeight : self.minHeight
+//      view.frame = CGRectMake(0, y, self.frame.width, rowHeight)
 
       let tapGr = UITapGestureRecognizer(target: self, action: #selector(ExpandTopScrollView.didSelect))
       view.addGestureRecognizer(tapGr)
 
-      y += rowHeight
+//      y += rowHeight
       self.addSubview(view)
     }
 
-    let bottomInset = frame.height - maxHeight
-    contentSize.width = frame.width
-    contentSize.height = enableBottomInset ? (y + bottomInset) : y
+//    let bottomInset = frame.height - maxHeight
+//    contentSize.width = frame.width
+//    contentSize.height = enableBottomInset ? (y + bottomInset) : y
   }
 
   func didSelect() {
-
+    NSLog("clicked")
   }
 
+  override func layoutSubviews() {
+    super.layoutSubviews()
+
+    NSLog("layoutSubview()")
+    let invisibleHeight = offset - CGFloat(curIndex) * minHeight
+    let visibleHeight = (maxHeight - invisibleHeight)
+    let visibleRatio = visibleHeight / maxHeight
+    let curHeight = visibleRatio * maxHeight
+    let nextHeight = (minHeight + maxHeight) - curHeight
+
+    var y: CGFloat = 0
+    for i in 0..<rows.count {
+      var height: CGFloat!
+      switch i {
+      case curIndex:
+        height = curHeight
+      case curIndex + 1:
+        height = nextHeight
+      default:
+        height = minHeight
+      }
+
+      if i == curIndex {
+        height = curHeight
+      } else if i == curIndex + 1 {
+        height = nextHeight
+      } else {
+        height = minHeight
+      }
+
+      rows[i].frame = CGRectMake(0, y, width, height)
+      y += height
+    }
+
+
+    let bottomInset = frame.height - maxHeight
+    contentSize.width = width
+    contentSize.height = enableBottomInset ? (y + bottomInset) : y
+  }
+
+  var curIndex: Int {
+    return Int(offset / minHeight)
+  }
+
+  var offset: CGFloat {
+    return contentOffset.y < 0 ? 0 : contentOffset.y
+  }
+
+}
+
+extension ExpandTopScrollView: UIScrollViewDelegate {
+
+  func scrollViewDidEndDragging(scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+    guard !decelerate else { return }
+
+    NSLog("didEndDraggin")
+  }
+
+  func scrollViewDidEndDecelerating(scrollView: UIScrollView) {
+    NSLog("didEndDecelerating")
+  }
+  
 }
 
 
@@ -83,7 +146,6 @@ class DemoRow: UIView {
     super.layoutSubviews()
 
     label.center = self.bounds.center
-    print(label.frame)
   }
 }
 
