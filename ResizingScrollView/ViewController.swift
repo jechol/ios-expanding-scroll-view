@@ -80,9 +80,7 @@ class ExpandTopScrollView: UIScrollView {
 
     let invisibleHeight = offset - CGFloat(curIndex) * aboveHeight
     let invisibleRatio = invisibleHeight / aboveHeight
-//    let visibleHeight = (aboveHeight - invisibleHeight)
-//    let visibleRatio = visibleHeight / aboveHeight
-    let curHeight = minHeight + (1 - invisibleRatio) * (maxHeight - minHeight)
+    let curHeight = aboveHeight + (1 - invisibleRatio) * (maxHeight - aboveHeight)
     let nextHeight = minHeight + invisibleRatio * (maxHeight - minHeight)
 
     setFrames(curIndex: curIndex, aboveHeight: aboveHeight, curHeight: curHeight, nextHeight: nextHeight)
@@ -93,9 +91,10 @@ class ExpandTopScrollView: UIScrollView {
 
     let invisibleHeight = offset - CGFloat(curIndex) * aboveHeight
     let invisibleRatio = invisibleHeight / maxHeight
+    let curHeight = maxHeight
     let nextHeight = minHeight + invisibleRatio * (maxHeight - minHeight)
 
-    setFrames(curIndex: curIndex, aboveHeight: aboveHeight, curHeight: maxHeight, nextHeight: nextHeight)
+    setFrames(curIndex: curIndex, aboveHeight: aboveHeight, curHeight: curHeight, nextHeight: nextHeight)
   }
 
   private func setFrames(curIndex curIndex: Int, aboveHeight: CGFloat, curHeight: CGFloat, nextHeight: CGFloat) {
@@ -169,6 +168,7 @@ class DemoRow: ExpandableView {
     super.layoutSubviews()
 
     label.center = CGPointMake(bounds.midX, bounds.midY + height * (1.0 - expandedRatio))
+    label.text = "\(expandedRatio)"
   }
 }
 
