@@ -33,7 +33,7 @@ class ExpandTopScrollView: UIScrollView {
   var rows = [UIView]() { didSet { configure() } }
   @IBInspectable var minHeightOverWidth: CGFloat = 0.4 { didSet { configure() } }
   @IBInspectable var maxHeightOverWidth: CGFloat = 0.8 { didSet { configure() } }
-  @IBInspectable var enableBottomInset: Bool = false
+  @IBInspectable var enableBottomInset: Bool = true
 
   var minHeight: CGFloat {
     return width * minHeightOverWidth
@@ -46,22 +46,11 @@ class ExpandTopScrollView: UIScrollView {
     delegate = self
     subviews.forEach { $0.removeFromSuperview() }
 
-//    var y = 0 as CGFloat
-
     rows.enumerate().forEach { (index, view) in
-//      let rowHeight = index == 0 ? self.maxHeight : self.minHeight
-//      view.frame = CGRectMake(0, y, self.frame.width, rowHeight)
-
       let tapGr = UITapGestureRecognizer(target: self, action: #selector(ExpandTopScrollView.didSelect))
       view.addGestureRecognizer(tapGr)
-
-//      y += rowHeight
       self.addSubview(view)
     }
-
-//    let bottomInset = frame.height - maxHeight
-//    contentSize.width = frame.width
-//    contentSize.height = enableBottomInset ? (y + bottomInset) : y
   }
 
   func didSelect() {
@@ -85,34 +74,7 @@ class ExpandTopScrollView: UIScrollView {
     let curHeight = visibleRatio * maxHeight
     let nextHeight = (minHeight + maxHeight) - curHeight
 
-    var y: CGFloat = 0
-    for i in 0..<rows.count {
-      var height: CGFloat!
-      switch i {
-      case curIndex:
-        height = curHeight
-      case curIndex + 1:
-        height = nextHeight
-      default:
-        height = minHeight
-      }
-
-      if i == curIndex {
-        height = curHeight
-      } else if i == curIndex + 1 {
-        height = nextHeight
-      } else {
-        height = minHeight
-      }
-
-      rows[i].frame = CGRectMake(0, y, width, height)
-      y += height
-    }
-
-
-    let bottomInset = frame.height - maxHeight
-    contentSize.width = width
-    contentSize.height = enableBottomInset ? (y + bottomInset) : y
+    setFrames(curIndex: curIndex, aboveHeight: minHeight, curHeight: curHeight, nextHeight: nextHeight)
   }
 
   private func expandAllAboveCurrent() {
