@@ -37,7 +37,7 @@ class ExpandTopScrollView: UIScrollView {
   var rows = [ExpandableView]() { didSet { configure() } }
   @IBInspectable var minHeightOverWidth: CGFloat = 0.2 { didSet { configure() } }
   @IBInspectable var maxHeightOverWidth: CGFloat = 0.8 { didSet { configure() } }
-  @IBInspectable var expandAboveRows: Bool = false
+  @IBInspectable var expandAboveRows: Bool = true
   @IBInspectable var enableBottomInset: Bool = true
 
   var minHeight: CGFloat {
@@ -70,12 +70,6 @@ class ExpandTopScrollView: UIScrollView {
   override func layoutSubviews() {
     super.layoutSubviews()
 
-
-//    NSLog("layoutSubview()")
-    expandAboveRows ? expandAllAboveCurrent() : expandCurrentOnly()
-  }
-
-  private func expandCurrentOnly() {
     let curIndex = Int(offset / aboveHeight)
 
     let invisibleHeight = offset - CGFloat(curIndex) * aboveHeight
@@ -85,18 +79,7 @@ class ExpandTopScrollView: UIScrollView {
 
     setFrames(curIndex: curIndex, aboveHeight: aboveHeight, curHeight: curHeight, nextHeight: nextHeight)
   }
-
-  private func expandAllAboveCurrent() {
-    let curIndex = Int(offset / aboveHeight)
-
-    let invisibleHeight = offset - CGFloat(curIndex) * aboveHeight
-    let invisibleRatio = invisibleHeight / maxHeight
-    let curHeight = maxHeight
-    let nextHeight = minHeight + invisibleRatio * (maxHeight - minHeight)
-
-    setFrames(curIndex: curIndex, aboveHeight: aboveHeight, curHeight: curHeight, nextHeight: nextHeight)
-  }
-
+  
   private func setFrames(curIndex curIndex: Int, aboveHeight: CGFloat, curHeight: CGFloat, nextHeight: CGFloat) {
     var y: CGFloat = 0
 
