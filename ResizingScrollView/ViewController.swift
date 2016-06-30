@@ -31,9 +31,16 @@ class ViewController: UIViewController {
 class ExpandTopScrollView: UIScrollView {
 
   var rows = [UIView]() { didSet { configure() } }
-  @IBInspectable var minHeight: CGFloat = 100.0 { didSet { configure() } }
-  @IBInspectable var maxHeight: CGFloat = 200.0 { didSet { configure() } }
+  @IBInspectable var minHeightOverWidth: CGFloat = 0.4 { didSet { configure() } }
+  @IBInspectable var maxHeightOverWidth: CGFloat = 0.8 { didSet { configure() } }
   @IBInspectable var enableBottomInset: Bool = false
+
+  var minHeight: CGFloat {
+    return width * minHeightOverWidth
+  }
+  var maxHeight: CGFloat {
+    return width * maxHeightOverWidth
+  }
 
   private func configure() {
     self.subviews.forEach { $0.removeFromSuperview() }
@@ -83,5 +90,14 @@ class DemoRow: UIView {
 extension CGRect {
   var center: CGPoint {
     return CGPointMake(midX, midY)
+  }
+}
+
+extension UIView {
+  var width: CGFloat {
+    return frame.size.width
+  }
+  var height: CGFloat {
+    return frame.size.height
   }
 }
