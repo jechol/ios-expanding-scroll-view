@@ -14,7 +14,7 @@ class ViewController: UIViewController {
     super.viewDidLoad()
 
     let count = 20
-    let sv = view as! ExpandTopScrollView
+    let sv = view as! ExpandingScrollView
     sv.rows = (0..<count).map { i in
       let v = DemoRow()
       v.index = i
@@ -30,7 +30,7 @@ class ExpandableView: UIView {
   var expandedRatio: CGFloat = 1.0 { didSet { setNeedsLayout() } }
 }
 
-class ExpandTopScrollView: UIScrollView {
+class ExpandingScrollView: UIScrollView {
 
   var rows = [ExpandableView]() { didSet { configure() } }
   @IBInspectable var minHeightOverWidth: CGFloat = 0.2 { didSet { configure() } }
@@ -67,7 +67,7 @@ class ExpandTopScrollView: UIScrollView {
     subviews.forEach { $0.removeFromSuperview() }
 
     rows.enumerate().forEach { (index, view) in
-      let tapGr = UITapGestureRecognizer(target: self, action: #selector(ExpandTopScrollView.didSelect))
+      let tapGr = UITapGestureRecognizer(target: self, action: #selector(ExpandingScrollView.didSelect))
       view.addGestureRecognizer(tapGr)
       view.clipsToBounds = true
       self.addSubview(view)
@@ -118,9 +118,9 @@ class ExpandTopScrollView: UIScrollView {
   }
 }
 
-extension ExpandTopScrollView: UIScrollViewDelegate {
+extension ExpandingScrollView: UIScrollViewDelegate {
   func scrollViewWillEndDragging(scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
-    guard let sv = scrollView as? ExpandTopScrollView else { return }
+    guard let sv = scrollView as? ExpandingScrollView else { return }
 
     var y = targetContentOffset.memory.y
 
