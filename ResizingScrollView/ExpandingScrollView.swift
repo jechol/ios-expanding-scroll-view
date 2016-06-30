@@ -105,7 +105,7 @@ class ExpandingScrollView: UIScrollView {
       }
 
       let row = rows[i]
-      row.frame = CGRectMake(0, y, width, height)
+      row.frame = CGRectMake(0, y - 1, width, height + 1) // Prevent 1px glitch line
       if let row = row as? ExpandableView {
         row.expandedRatio = height / maxHeight
       }
