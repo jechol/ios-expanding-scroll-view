@@ -12,15 +12,13 @@ class ViewController: UIViewController {
 
   override func viewDidLoad() {
     super.viewDidLoad()
-    // Do any additional setup after loading the view, typically from a nib.
 
+    let count = 20
     let sv = view as! ExpandTopScrollView
-    sv.rows = (0..<12).map { i in
+    sv.rows = (0..<count).map { i in
       let v = DemoRow()
-      let gray = CGFloat(i) / 12.0
-      v.backgroundColor = UIColor.init(white: gray, alpha: 1.0)
-      v.label.text = "Row \(i)"
-      v.label.sizeToFit()
+      v.index = i
+      v.backgroundColor = UIColor.init(white: CGFloat(i) / CGFloat(count), alpha: 1.0)
       return v
     }
 
@@ -29,7 +27,7 @@ class ViewController: UIViewController {
 }
 
 class ExpandableView: UIView {
-  var expandedRatio: CGFloat = 1.0 { didSet { setNeedsDisplay() } }
+  var expandedRatio: CGFloat = 1.0 { didSet { setNeedsLayout() } }
 }
 
 class ExpandTopScrollView: UIScrollView {
@@ -51,8 +49,21 @@ class ExpandTopScrollView: UIScrollView {
     return expandAboveRows ? maxHeight : minHeight
   }
 
+  var offset: CGFloat {
+    return contentOffset.y < 0 ? 0 : contentOffset.y
+  }
+
+  var curIndex: Int {
+    return Int(offset / aboveHeight)
+  }
+
+  var rowOffset: CGFloat {
+    return offset - CGFloat(curIndex) * aboveHeight
+  }
+
   private func configure() {
     delegate = self
+    decelerationRate = UIScrollViewDecelerationRateFast
     subviews.forEach { $0.removeFromSuperview() }
 
     rows.enumerate().forEach { (index, view) in
@@ -70,17 +81,14 @@ class ExpandTopScrollView: UIScrollView {
   override func layoutSubviews() {
     super.layoutSubviews()
 
-    let curIndex = Int(offset / aboveHeight)
-
-    let invisibleHeight = offset - CGFloat(curIndex) * aboveHeight
-    let invisibleRatio = invisibleHeight / aboveHeight
+    let invisibleRatio = rowOffset / aboveHeight
     let curHeight = aboveHeight + (1 - invisibleRatio) * (maxHeight - aboveHeight)
     let nextHeight = minHeight + invisibleRatio * (maxHeight - minHeight)
 
-    setFrames(curIndex: curIndex, aboveHeight: aboveHeight, curHeight: curHeight, nextHeight: nextHeight)
+    setFrames(aboveHeight: aboveHeight, curHeight: curHeight, nextHeight: nextHeight)
   }
-  
-  private func setFrames(curIndex curIndex: Int, aboveHeight: CGFloat, curHeight: CGFloat, nextHeight: CGFloat) {
+
+  private func setFrames(aboveHeight aboveHeight: CGFloat, curHeight: CGFloat, nextHeight: CGFloat) {
     var y: CGFloat = 0
 
     for i in 0..<rows.count {
@@ -106,39 +114,33 @@ class ExpandTopScrollView: UIScrollView {
 
     let bottomInset = enableBottomInset ? (height - maxHeight) : 0
     contentSize.width = width
-    contentSize.height = y + bottomInset
+    contentSize.height = CGFloat(rows.count) * aboveHeight + bottomInset
   }
-
-  var offset: CGFloat {
-    return contentOffset.y < 0 ? 0 : contentOffset.y
-  }
-}
-
-extension UIScrollView {
 }
 
 extension ExpandTopScrollView: UIScrollViewDelegate {
-
-  func scrollViewDidEndDragging(scrollView: UIScrollView, willDecelerate decelerate: Bool) {
-    guard !decelerate else { return }
-    guard let scrollView = scrollView as? ExpandTopScrollView else { return }
-
-//    let rowY = scrollView.cur
-
-  }
-
   func scrollViewWillEndDragging(scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
-    NSLog("willEndDragging")
-  }
+    guard let sv = scrollView as? ExpandTopScrollView else { return }
 
-  func scrollViewDidEndDecelerating(scrollView: UIScrollView) {
-    NSLog("didEndDecelerating")
+    var y = targetContentOffset.memory.y
+
+    switch velocity.y {
+    case let v where v < -0.1:
+      y = floor(y / sv.aboveHeight) * sv.aboveHeight
+    case let v where v > 0.1:
+      y = ceil(y / sv.aboveHeight) * sv.aboveHeight
+    default:
+      y = round(y / sv.aboveHeight) * sv.aboveHeight
+    }
+
+    targetContentOffset.memory.y = y
   }
-  
 }
 
 
 class DemoRow: ExpandableView {
+
+  var index: Int!
 
   lazy var label: UILabel = { [unowned self] in
     let v = UILabel()
@@ -150,8 +152,9 @@ class DemoRow: ExpandableView {
   override func layoutSubviews() {
     super.layoutSubviews()
 
+    label.text = "\(index): \(expandedRatio)"
+    label.sizeToFit()
     label.center = CGPointMake(bounds.midX, bounds.midY + height * (1.0 - expandedRatio))
-    label.text = "\(expandedRatio)"
   }
 }
 
