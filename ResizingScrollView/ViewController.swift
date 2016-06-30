@@ -37,7 +37,7 @@ class ExpandTopScrollView: UIScrollView {
   var rows = [ExpandableView]() { didSet { configure() } }
   @IBInspectable var minHeightOverWidth: CGFloat = 0.2 { didSet { configure() } }
   @IBInspectable var maxHeightOverWidth: CGFloat = 0.8 { didSet { configure() } }
-  @IBInspectable var expandAboveRows: Bool = true
+  @IBInspectable var expandAboveRows: Bool = false
   @IBInspectable var enableBottomInset: Bool = true
 
   var minHeight: CGFloat {
@@ -47,6 +47,10 @@ class ExpandTopScrollView: UIScrollView {
     return width * maxHeightOverWidth
   }
 
+  var aboveHeight: CGFloat {
+    return expandAboveRows ? maxHeight : minHeight
+  }
+
   private func configure() {
     delegate = self
     subviews.forEach { $0.removeFromSuperview() }
@@ -54,6 +58,7 @@ class ExpandTopScrollView: UIScrollView {
     rows.enumerate().forEach { (index, view) in
       let tapGr = UITapGestureRecognizer(target: self, action: #selector(ExpandTopScrollView.didSelect))
       view.addGestureRecognizer(tapGr)
+      view.clipsToBounds = true
       self.addSubview(view)
     }
   }
@@ -66,32 +71,31 @@ class ExpandTopScrollView: UIScrollView {
     super.layoutSubviews()
 
 
-    NSLog("layoutSubview()")
+//    NSLog("layoutSubview()")
     expandAboveRows ? expandAllAboveCurrent() : expandCurrentOnly()
   }
 
   private func expandCurrentOnly() {
-    let offset = contentOffset.y < 0 ? 0 : contentOffset.y
-    let curIndex = Int(offset / minHeight)
+    let curIndex = Int(offset / aboveHeight)
 
-    let invisibleHeight = offset - CGFloat(curIndex) * minHeight
-    let visibleHeight = (maxHeight - invisibleHeight)
-    let visibleRatio = visibleHeight / maxHeight
-    let curHeight = visibleRatio * maxHeight
-    let nextHeight = (minHeight + maxHeight) - curHeight
+    let invisibleHeight = offset - CGFloat(curIndex) * aboveHeight
+    let invisibleRatio = invisibleHeight / aboveHeight
+//    let visibleHeight = (aboveHeight - invisibleHeight)
+//    let visibleRatio = visibleHeight / aboveHeight
+    let curHeight = minHeight + (1 - invisibleRatio) * (maxHeight - minHeight)
+    let nextHeight = minHeight + invisibleRatio * (maxHeight - minHeight)
 
-    setFrames(curIndex: curIndex, aboveHeight: minHeight, curHeight: curHeight, nextHeight: nextHeight)
+    setFrames(curIndex: curIndex, aboveHeight: aboveHeight, curHeight: curHeight, nextHeight: nextHeight)
   }
 
   private func expandAllAboveCurrent() {
-    let offset = contentOffset.y < 0 ? 0 : contentOffset.y
-    let curIndex = Int(offset / maxHeight)
+    let curIndex = Int(offset / aboveHeight)
 
-    let invisibleHeight = offset - CGFloat(curIndex) * maxHeight
+    let invisibleHeight = offset - CGFloat(curIndex) * aboveHeight
     let invisibleRatio = invisibleHeight / maxHeight
     let nextHeight = minHeight + invisibleRatio * (maxHeight - minHeight)
 
-    setFrames(curIndex: curIndex, aboveHeight: maxHeight, curHeight: maxHeight, nextHeight: nextHeight)
+    setFrames(curIndex: curIndex, aboveHeight: aboveHeight, curHeight: maxHeight, nextHeight: nextHeight)
   }
 
   private func setFrames(curIndex curIndex: Int, aboveHeight: CGFloat, curHeight: CGFloat, nextHeight: CGFloat) {
@@ -123,14 +127,26 @@ class ExpandTopScrollView: UIScrollView {
     contentSize.height = y + bottomInset
   }
 
+  var offset: CGFloat {
+    return contentOffset.y < 0 ? 0 : contentOffset.y
+  }
+}
+
+extension UIScrollView {
 }
 
 extension ExpandTopScrollView: UIScrollViewDelegate {
 
   func scrollViewDidEndDragging(scrollView: UIScrollView, willDecelerate decelerate: Bool) {
     guard !decelerate else { return }
+    guard let scrollView = scrollView as? ExpandTopScrollView else { return }
 
-    NSLog("didEndDraggin")
+//    let rowY = scrollView.cur
+
+  }
+
+  func scrollViewWillEndDragging(scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
+    NSLog("willEndDragging")
   }
 
   func scrollViewDidEndDecelerating(scrollView: UIScrollView) {
