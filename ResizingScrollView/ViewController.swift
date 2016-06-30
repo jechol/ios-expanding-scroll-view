@@ -8,13 +8,14 @@
 
 import UIKit
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, ExpandingScrollViewDelegate {
 
   override func viewDidLoad() {
     super.viewDidLoad()
 
     let count = 20
     let sv = view as! ExpandingScrollView
+
     sv.rows = (0..<count).map { i in
       let v = DemoRow()
       v.index = i
@@ -23,6 +24,11 @@ class ViewController: UIViewController {
     }
 
     sv.showsVerticalScrollIndicator = false
+    sv.expandingScrollViewDelegate = self
+  }
+
+  func expandingScrollView(scrollView: ExpandingScrollView, didSelectViewAtIndex index: Int) {
+    NSLog("expanding scroll view selected item at : \(index)")
   }
 }
 

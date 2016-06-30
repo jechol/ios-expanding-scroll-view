@@ -12,9 +12,15 @@ protocol ExpandableView: class {
   var expandedRatio: CGFloat { get set }
 }
 
+protocol ExpandingScrollViewDelegate {
+  func expandingScrollView(scrollView: ExpandingScrollView, didSelectViewAtIndex index: Int)
+}
+
 class ExpandingScrollView: UIScrollView {
 
   var rows = [UIView]() { didSet { configure() } }
+  var expandingScrollViewDelegate: ExpandingScrollViewDelegate?
+
   @IBInspectable var minHeightOverWidth: CGFloat = 0.2 { didSet { configure() } }
   @IBInspectable var maxHeightOverWidth: CGFloat = 0.8 { didSet { configure() } }
   @IBInspectable var expandAboveRows: Bool = true
@@ -52,12 +58,23 @@ class ExpandingScrollView: UIScrollView {
       let tapGr = UITapGestureRecognizer(target: self, action: #selector(ExpandingScrollView.didSelect))
       view.addGestureRecognizer(tapGr)
       view.clipsToBounds = true
+      view.tag = index
       self.addSubview(view)
     }
   }
 
-  func didSelect() {
-    NSLog("clicked")
+  func didSelect(gr: UITapGestureRecognizer) {
+    let view = gr.view!
+    let index = view.tag
+
+    let targetOffset = CGFloat(index) * aboveHeight
+
+    if contentOffset.y == targetOffset {
+      expandingScrollViewDelegate?.expandingScrollView(self, didSelectViewAtIndex: index)
+    } else {
+      self.setContentOffset(CGPointMake(0, targetOffset), animated: true)
+    }
+
   }
 
   override func layoutSubviews() {
