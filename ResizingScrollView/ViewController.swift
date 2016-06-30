@@ -72,6 +72,13 @@ class ExpandTopScrollView: UIScrollView {
     super.layoutSubviews()
 
     NSLog("layoutSubview()")
+    expandCurrentOnly()
+  }
+
+  private func expandCurrentOnly() {
+    let offset = contentOffset.y < 0 ? 0 : contentOffset.y
+    let curIndex = Int(offset / minHeight)
+
     let invisibleHeight = offset - CGFloat(curIndex) * minHeight
     let visibleHeight = (maxHeight - invisibleHeight)
     let visibleRatio = visibleHeight / maxHeight
@@ -108,12 +115,43 @@ class ExpandTopScrollView: UIScrollView {
     contentSize.height = enableBottomInset ? (y + bottomInset) : y
   }
 
-  var curIndex: Int {
-    return Int(offset / minHeight)
+  private func expandAllAboveCurrent() {
+    let offset = contentOffset.y < 0 ? 0 : contentOffset.y
+    let curIndex = Int(offset / maxHeight)
+
+    let invisibleHeight = offset - CGFloat(curIndex) * minHeight
+//    let visibleHeight = maxHeight - invisibleHeight
+
+    let invisibleRatio = invisibleHeight / maxHeight
+    let nextHeight = minHeight + invisibleRatio * (maxHeight - minHeight)
+
+
   }
 
-  var offset: CGFloat {
-    return contentOffset.y < 0 ? 0 : contentOffset.y
+  private func setFrames(curIndex curIndex: Int, aboveHeight: CGFloat, curHeight: CGFloat, nextHeight: CGFloat) {
+    var y: CGFloat = 0
+
+    for i in 0..<rows.count {
+      var height: CGFloat!
+
+      switch i {
+      case 0..<curIndex:
+        height = aboveHeight
+      case curIndex:
+        height = curHeight
+      case curIndex + 1:
+        height = nextHeight
+      default:
+        height = minHeight
+      }
+
+      rows[i].frame = CGRectMake(0, y, width, height)
+      y += height
+    }
+
+    let bottomInset = enableBottomInset ? (height - maxHeight) : 0
+    contentSize.width = width
+    contentSize.height = y + bottomInset
   }
 
 }
