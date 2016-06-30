@@ -58,11 +58,11 @@
 			children = (
 				F4562FAB1D23BD0B00A790D1 /* AppDelegate.swift */,
 				F4562FAD1D23BD0B00A790D1 /* ViewController.swift */,
+				F4037B061D250C14008DAAD6 /* ExpandingScrollView.swift */,
 				F4562FAF1D23BD0B00A790D1 /* Main.storyboard */,
 				F4562FB21D23BD0B00A790D1 /* Assets.xcassets */,
 				F4562FB41D23BD0B00A790D1 /* LaunchScreen.storyboard */,
 				F4562FB71D23BD0B00A790D1 /* Info.plist */,
-				F4037B061D250C14008DAAD6 /* ExpandingScrollView.swift */,
 			);
 			path = ResizingScrollView;
 			sourceTree = "<group>";

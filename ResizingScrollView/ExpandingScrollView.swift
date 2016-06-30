@@ -8,13 +8,13 @@
 
 import UIKit
 
-class ExpandableView: UIView {
-  var expandedRatio: CGFloat = 1.0 { didSet { setNeedsLayout() } }
+protocol ExpandableView: class {
+  var expandedRatio: CGFloat { get set }
 }
 
 class ExpandingScrollView: UIScrollView {
 
-  var rows = [ExpandableView]() { didSet { configure() } }
+  var rows = [UIView]() { didSet { configure() } }
   @IBInspectable var minHeightOverWidth: CGFloat = 0.2 { didSet { configure() } }
   @IBInspectable var maxHeightOverWidth: CGFloat = 0.8 { didSet { configure() } }
   @IBInspectable var expandAboveRows: Bool = true
@@ -89,7 +89,9 @@ class ExpandingScrollView: UIScrollView {
 
       let row = rows[i]
       row.frame = CGRectMake(0, y, width, height)
-      row.expandedRatio = height / maxHeight
+      if let row = row as? ExpandableView {
+        row.expandedRatio = height / maxHeight
+      }
 
       y += height
     }
