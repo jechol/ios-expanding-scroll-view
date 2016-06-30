@@ -152,8 +152,9 @@ class DemoRow: ExpandableView {
   override func layoutSubviews() {
     super.layoutSubviews()
 
-    label.text = "\(index): \(expandedRatio)"
+    label.text = "\(index): \(NSString(format:"%.3f", expandedRatio))"
     label.sizeToFit()
+
     label.center = CGPointMake(bounds.midX, bounds.midY + height * (1.0 - expandedRatio))
   }
 }
